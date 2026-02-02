@@ -1,59 +1,52 @@
-// Task Management
-let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+// To-do list application code
 
-// Function to save tasks to localStorage
-function saveTasks() {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-}
+const addButton = document.getElementById('add');
+const inputField = document.getElementById('todo-input');
+const todoList = document.getElementById('todo-list');
 
-// Function to render tasks
-function renderTasks() {
-    const taskList = document.getElementById('task-list');
-    taskList.innerHTML = '';
-    tasks.forEach((task, index) => {
-        const taskItem = document.createElement('div');
-        taskItem.className = 'task-item';
-        taskItem.innerHTML = `
-            <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${index})">
-            <span contenteditable="true" onblur="editTask(${index}, this.innerText)">${task.name}</span>
-            <button onclick="deleteTask(${index})">Delete</button>
-        `;
-        taskList.appendChild(taskItem);
+let todos = JSON.parse(localStorage.getItem('todos')) || [];
+
+const renderTodos = () => {
+    todoList.innerHTML = '';
+    todos.forEach((todo, index) => {
+        const li = document.createElement('li');
+        li.textContent = todo.text;
+        li.className = todo.completed ? 'completed' : '';
+
+        const completeButton = document.createElement('button');
+        completeButton.textContent = todo.completed ? 'Undo' : 'Complete';
+        completeButton.onclick = () => {
+            todos[index].completed = !todos[index].completed;
+            updateLocalStorage();
+            renderTodos();
+        };
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.onclick = () => {
+            todos.splice(index, 1);
+            updateLocalStorage();
+            renderTodos();
+        };
+
+        li.appendChild(completeButton);
+        li.appendChild(deleteButton);
+        todoList.appendChild(li);
     });
-}
+};
 
-// Function to add a task
-function addTask() {
-    const taskInput = document.getElementById('task-input');
-    const taskName = taskInput.value.trim();
-    if (taskName) {
-        tasks.push({ name: taskName, completed: false });
-        taskInput.value = '';
-        saveTasks();
-        renderTasks();
+const updateLocalStorage = () => {
+    localStorage.setItem('todos', JSON.stringify(todos));
+};
+
+addButton.onclick = () => {
+    const text = inputField.value.trim();
+    if (text) {
+        todos.push({ text, completed: false });
+        inputField.value = '';
+        updateLocalStorage();
+        renderTodos();
     }
-}
+};
 
-// Function to delete a task
-function deleteTask(index) {
-    tasks.splice(index, 1);
-    saveTasks();
-    renderTasks();
-}
-
-// Function to toggle task completion
-function toggleTask(index) {
-    tasks[index].completed = !tasks[index].completed;
-    saveTasks();
-    renderTasks();
-}
-
-// Function to edit a task
-function editTask(index, newName) {
-    tasks[index].name = newName.trim();
-    saveTasks();
-    renderTasks();
-}
-
-// Initial rendering of tasks
-renderTasks();
+renderTodos();
